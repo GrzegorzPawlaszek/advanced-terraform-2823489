@@ -6,7 +6,7 @@ variable "aws_access_key" {}
 variable "aws_secret_key" {}
 
 variable "bucket_name" {
-  default = "red30-tfstate"
+  default = "red30-tfstate-gregp"
 }
 
 # //////////////////////////////
@@ -22,18 +22,23 @@ provider "aws" {
 # TERRAFORM USER
 # //////////////////////////////
 data "aws_iam_user" "terraform" {
-  user_name = "terraform"
+  # tu musimy podać nazwę usera, jaki jest stworzony na AWS
+  user_name = "Learning_Terraform"
 }
 
 # //////////////////////////////
 # S3 BUCKET
 # //////////////////////////////
-resource "aws_s3_bucket" "red30-tfremotestate" {
+resource "aws_s3_bucket" "red30-tfremotestate-gregp" {
   bucket = var.bucket_name
+  # umozliwia zniszczenie bucketa nawet jeśli zawiera jakieś dane
   force_destroy = true
+  # dostęp tylko dla uprawnionych uzytkowników
+  # ale ten zasób jest juz deprecated i jest nowy: aws_s3_bucket_versioning
   acl = "private"
 
   versioning {
+    # dane są wersjonowane zamiast zostawać nadpisanymi
     enabled = true
   }
 
@@ -56,8 +61,9 @@ resource "aws_s3_bucket" "red30-tfremotestate" {
 EOF
 }
 
-resource "aws_s3_bucket_public_access_block" "red30-tfremotestate" {
-  bucket = aws_s3_bucket.red30-tfremotestate.id
+# to jest ciekawe, bo ten zasób nadpisuje ustawienia dostępowe do S3, tak aby jakikolwiek publiczny dostęp był mozliwy tylko dla autoryzowanych uzytkowników, nawet gdyby ktoś przez przypadek dodał np. Politykę publicznego dostępu na odczyty
+resource "aws_s3_bucket_public_access_block" "red30-tfremotestate-gregp" {
+  bucket = aws_s3_bucket.red30-tfremotestate-gregp.id
 
   block_public_acls   = true
   block_public_policy = true
@@ -69,6 +75,7 @@ resource "aws_s3_bucket_public_access_block" "red30-tfremotestate" {
 # DYNAMODB TABLE
 # //////////////////////////////
 resource "aws_dynamodb_table" "tf_db_statelock" {
+  # definiowana jest pojedyncza tabela z jednym atrybutem LockID o typie String - musi się on tak nazywać
   name           = "red30-tfstatelock"
   read_capacity  = 20
   write_capacity = 20

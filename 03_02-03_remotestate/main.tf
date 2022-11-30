@@ -3,6 +3,15 @@
 # //////////////////////////////
 terraform {
   backend "s3" {
+    # tu jest mozliwość dalszej konfiguracji, ale poniewaz są to dane wraźliwe lepiej jest to wynieść np. do CLI i odpalić tak:
+
+    # terraform init \
+    # -backend-config="bucket=red30-tfstate-gregp" \
+    # -backend-config="key=red30/ecommerceapp/app.state" \
+    # -backend-config="region=us-east-2" \
+    # -backend-config="dynamodb_table=red30-tfstatelock" \
+    # -backend-config="access_key={key}" \
+    # -backend-config="secret_key={secret}"
   }
 }
 
